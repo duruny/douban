@@ -1,0 +1,5 @@
+*.pyc
+*~
+*#
+douban/local_settings.py
+crontab_crawl_douban.log

@@ -111,8 +111,9 @@ class DoubanSpider(CrawlSpider):
                 # for sqlite3
                 #con = sqlite3.connect('/home/lian/zufang.db')
 
-                con = MySQLdb.connect(host="123.57.86.202",
-                        port=3306, user="root", passwd="root", db ="mysite", charset='utf8');
+#                con = MySQLdb.connect(host="123.57.86.202",
+                con = MySQLdb.connect(host="localhost",
+                        port=3306, user="root", passwd="rootlian", db ="mysite", charset='utf8');
                 with con:
                     cur = con.cursor()
                     try:

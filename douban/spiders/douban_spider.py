@@ -58,7 +58,14 @@ class DoubanSpider(CrawlSpider):
         u'\u7F8E\u7F8E\u7684\u623F\u5B50\u7B49\u9760\u8C31\u7684\u4F60', # 美美的房子等靠谱的你
     ]
 
-    def __get_id_from_url(self, href):
+    def __get_user_id_from_url(self, href):
+        m =  re.search("^http://www.douban.com/group/people/([^/]+)/$", href)
+        if m:
+            return m.group(1)
+        else:
+            return None
+
+    def __get_topic_id_from_url(self, href):
         m =  re.search("^http://www.douban.com/group/topic/([^/]+)/$", href)
         if m:
             return m.group(1)
@@ -74,8 +81,13 @@ class DoubanSpider(CrawlSpider):
 
     def parse(self, response):
         for node in response.xpath("//table[@class='olt']//tr"):
+
             href = node.xpath(".//td[1]/a/@href").extract()
             title = node.xpath(".//td[1]/a/@title").extract()
+
+            user_href = node.xpath(".//td[2]/a/@href").extract()
+            user_name = node.xpath(".//td[2]/a/text()").extract()
+
             reply_count = node.xpath(".//td[3]/text()").extract()
             reply_time = node.xpath(".//td[4]/text()").extract()
 
@@ -84,6 +96,10 @@ class DoubanSpider(CrawlSpider):
             if href and title and reply_count and reply_time:
                 href = href[0]
                 title = title[0]
+
+                user_href = user_href[0]
+                user_name = user_name[0]
+
                 reply_count =reply_count[0]
                 reply_time = reply_time[0]
 
@@ -98,7 +114,8 @@ class DoubanSpider(CrawlSpider):
                 if reply_count and int(reply_count) > 50:
                     continue
 
-                topic_id = self.__get_id_from_url(href)
+                topic_id = self.__get_topic_id_from_url(href)
+                user_id = self.__get_user_id_from_url(user_href)
                 if not topic_id:
                     continue
 
@@ -129,10 +146,13 @@ class DoubanSpider(CrawlSpider):
                         #cur.execute("INSERT OR IGNORE INTO zufang VALUES(%d, '%s', '%s', '%s', %d)" %
                         #        (int(topic_id), title, href, reply_time, timestamp))
 
-#                        cur.execute("INSERT IGNORE INTO zufang VALUES \
-                        cur.execute("INSERT INTO zufang VALUES (%d, '%s', '%s', '%s', %d) ON DUPLICATE KEY UPDATE reply_time='%s', timestamp=%d" % (int(topic_id), title, href, reply_time, int(timestamp), reply_time, int(timestamp)))
+                        cur.execute("INSERT INTO %s \
+                                        VALUES (%d, '%s', '%s', '%s', %d) \
+                                    ON DUPLICATE KEY UPDATE \
+                                        reply_time='%s',\
+                                        timestamp=%d" %
+                                    (MYSQL_INFO['topic_table'], int(topic_id), title, href, reply_time, int(timestamp), reply_time, int(timestamp)))
                     except Exception as e:
-                        print e
                         continue
             else:
                 continue

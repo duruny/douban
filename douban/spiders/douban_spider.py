@@ -93,7 +93,8 @@ class DoubanSpider(CrawlSpider):
 
             should_continue = False
 
-            if href and title and reply_count and reply_time:
+            if href and title and reply_count and reply_time \
+                and user_href and user_name:
                 href = href[0]
                 title = title[0]
 
@@ -116,7 +117,7 @@ class DoubanSpider(CrawlSpider):
 
                 topic_id = self.__get_topic_id_from_url(href)
                 user_id = self.__get_user_id_from_url(user_href)
-                if not topic_id:
+                if not topic_id or not user_id:
                     continue
 
                 # make sure 'reply_time' is in the form of '05-23 13:05'
@@ -147,11 +148,14 @@ class DoubanSpider(CrawlSpider):
                         #        (int(topic_id), title, href, reply_time, timestamp))
 
                         cur.execute("INSERT INTO %s \
-                                        VALUES (%d, '%s', '%s', '%s', %d) \
+                                        VALUES (%d, '%s', '%s', %d) \
                                     ON DUPLICATE KEY UPDATE \
                                         reply_time='%s',\
                                         timestamp=%d" %
-                                    (MYSQL_INFO['topic_table'], int(topic_id), title, href, reply_time, int(timestamp), reply_time, int(timestamp)))
+                                    (MYSQL_INFO['topic_table'], int(topic_id), title, reply_time, int(timestamp), reply_time, int(timestamp)))
+                        cur.execute("INSERT IGNORE INTO %s \
+                                        VALUES (%d, %d, '%s') " %
+                                    (MYSQL_INFO['user_table'], int(user_id), int(topic_id), user_name))
                     except Exception as e:
                         continue
             else:

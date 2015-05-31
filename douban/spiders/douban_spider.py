@@ -147,16 +147,25 @@ class DoubanSpider(CrawlSpider):
                         #cur.execute("INSERT OR IGNORE INTO zufang VALUES(%d, '%s', '%s', '%s', %d)" %
                         #        (int(topic_id), title, href, reply_time, timestamp))
 
+                        cur.execute("SELECT COUNT(ip) FROM zufang_topic_like where id=%d;" % int(topic_id))
+                        ver = cur.fetchone()
+                        likes = int(ver[0])
+
                         cur.execute("INSERT INTO %s \
-                                        VALUES (%d, '%s', '%s', %d) \
+                                        VALUES (%d, '%s', '%s', %d, %d) \
                                     ON DUPLICATE KEY UPDATE \
                                         reply_time='%s',\
-                                        timestamp=%d" %
-                                    (MYSQL_INFO['topic_table'], int(topic_id), title, reply_time, int(timestamp), reply_time, int(timestamp)))
+                                        timestamp=%d, \
+                                        likes=%d" %
+                                    (MYSQL_INFO['topic_table'], int(topic_id),
+                                        title, reply_time, int(timestamp), likes,
+                                        reply_time, int(timestamp), likes))
+
                         cur.execute("INSERT IGNORE INTO %s \
                                         VALUES (%d, %d, '%s') " %
                                     (MYSQL_INFO['user_table'], int(user_id), int(topic_id), user_name))
                     except Exception as e:
+                        print e
                         continue
             else:
                 continue

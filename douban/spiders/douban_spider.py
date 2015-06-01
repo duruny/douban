@@ -156,8 +156,9 @@ class DoubanSpider(CrawlSpider):
                             user_id, reply_count):
                     continue
 
+                topic_id = int(topic_id)
                 reply_time = str(datetime.now().year) + '-' + reply_time
-                timestamp = time.mktime(datetime.strptime(reply_time, "%Y-%m-%d %H:%M").timetuple())
+                timestamp = int(time.mktime(datetime.strptime(reply_time, "%Y-%m-%d %H:%M").timetuple()))
 
                 con = MySQLdb.connect(
                         host = MYSQL_INFO['host'],
@@ -171,24 +172,21 @@ class DoubanSpider(CrawlSpider):
                 with con:
                     cur = con.cursor()
                     cur.execute("SELECT COUNT(*) FROM %s where id=%d;" %
-                            (MYSQL_INFO['topic_like_table'], int(topic_id)))
+                            (MYSQL_INFO['topic_like_table'], topic_id))
 
                     row = cur.fetchone()
                     likes = int(row[0])
 
                     cur.execute("INSERT INTO %s \
-                                    VALUES (%d, '%s', '%s', %d, %d) \
+                                    VALUES (%d, '%s', %d, %d) \
                                 ON DUPLICATE KEY UPDATE \
-                                    reply_time='%s',\
                                     timestamp=%d, \
                                     likes=%d" %
-                                (MYSQL_INFO['topic_table'], int(topic_id),
-                                    title, reply_time, int(timestamp), likes,
-                                    reply_time, int(timestamp), likes))
+                                (MYSQL_INFO['topic_table'], topic_id, title, timestamp, likes, timestamp, likes))
 
                     cur.execute("INSERT IGNORE INTO %s \
                                     VALUES ('%s', %d, '%s')" %
-                                (MYSQL_INFO['user_table'], user_id, int(topic_id), user_name))
+                                (MYSQL_INFO['user_table'], user_id, topic_id, user_name))
             except Exception as e:
                 logging.error(e)
                 continue

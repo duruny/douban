@@ -22,25 +22,25 @@ class DoubanSpider(CrawlSpider):
     allowed_domains = ["douban.com"]
     start_urls = [
         "http://www.douban.com/group/465554/",
-        "http://www.douban.com/group/beijingzufang/",
-        "http://www.douban.com/group/26926/",
-        "http://www.douban.com/group/zhufang/",
-        "http://www.douban.com/group/549574/",
-        "http://www.douban.com/group/257523/",
-        "http://www.douban.com/group/opking/",
-        "http://www.douban.com/group/279962/",
-        "http://www.douban.com/group/sweethome/",
-        "http://www.douban.com/group/252218/",
-        "http://www.douban.com/group/bjzufang/",
-        "http://www.douban.com/group/cbdrent/",
-        "http://www.douban.com/group/xiaotanzi/",
-        "http://www.douban.com/group/374051/",
-        "http://www.douban.com/group/325060/",
-        "http://www.douban.com/group/276176/",
-        "http://www.douban.com/group/550436/",
-        "http://www.douban.com/group/519274/",
-        "http://www.douban.com/group/bjzft/",
-        "http://www.douban.com/group/516673/"
+#        "http://www.douban.com/group/beijingzufang/",
+#        "http://www.douban.com/group/26926/",
+#        "http://www.douban.com/group/zhufang/",
+#        "http://www.douban.com/group/549574/",
+#        "http://www.douban.com/group/257523/",
+#        "http://www.douban.com/group/opking/",
+#        "http://www.douban.com/group/279962/",
+#        "http://www.douban.com/group/sweethome/",
+#        "http://www.douban.com/group/252218/",
+#        "http://www.douban.com/group/bjzufang/",
+#        "http://www.douban.com/group/cbdrent/",
+#        "http://www.douban.com/group/xiaotanzi/",
+#        "http://www.douban.com/group/374051/",
+#        "http://www.douban.com/group/325060/",
+#        "http://www.douban.com/group/276176/",
+#        "http://www.douban.com/group/550436/",
+#        "http://www.douban.com/group/519274/",
+#        "http://www.douban.com/group/bjzft/",
+#        "http://www.douban.com/group/516673/"
     ]
 
     filter_title = [
@@ -171,22 +171,11 @@ class DoubanSpider(CrawlSpider):
 
                 with con:
                     cur = con.cursor()
-                    cur.execute("SELECT COUNT(*) FROM %s where id=%d;" %
-                            (MYSQL_INFO['topic_like_table'], topic_id))
-
-                    row = cur.fetchone()
-                    likes = int(row[0])
-
                     cur.execute("INSERT INTO %s \
-                                    VALUES (%d, '%s', %d, %d) \
+                                    VALUES (%d, '%s', %d, '%s', '%s', '%s') \
                                 ON DUPLICATE KEY UPDATE \
-                                    timestamp=%d, \
-                                    likes=%d" %
-                                (MYSQL_INFO['topic_table'], topic_id, title, timestamp, likes, timestamp, likes))
-
-                    cur.execute("INSERT IGNORE INTO %s \
-                                    VALUES ('%s', %d, '%s')" %
-                                (MYSQL_INFO['user_table'], user_id, topic_id, user_name))
+                                    timestamp=%d" %
+                                (MYSQL_INFO['topic_table'], topic_id, title, timestamp, user_id, user_name, '', timestamp))
             except Exception as e:
                 logging.error(e)
                 continue

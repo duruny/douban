@@ -96,8 +96,6 @@ class DoubanSpider(CrawlSpider):
                 reply_time = str(datetime.now().year) + '-' + reply_time
                 reply_timestamp = int(time.mktime(datetime.strptime(reply_time, "%Y-%m-%d %H:%M").timetuple()))
 
-                if reply_count > 9:
-                    print topic_id
                 con = self.con
                 with con:
                     cur = con.cursor()
@@ -137,9 +135,9 @@ class DoubanSpider(CrawlSpider):
             con = self.con
             with con:
                 cur = con.cursor()
-                cur.execute("UPDATE %s SET content='%s', timestamp='%s' \
+                cur.execute("UPDATE %s SET content='%s', timestamp=%d \
                              WHERE id=%d" %
-                             (MYSQL_INFO['topic_table'],content, timestamp, topic_id))
+                             (MYSQL_INFO['topic_table'], content, timestamp, topic_id))
         except Exception as e:
             logging.error(e)
             return

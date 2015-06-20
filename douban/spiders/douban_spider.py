@@ -58,7 +58,7 @@ class DoubanSpider(CrawlSpider):
             if word in title:
                 return True
 
-        if reply_count > 50:
+        if reply_count > 75:
             return True
 
         return False

@@ -12,7 +12,7 @@ from douban.local_settings import MYSQL_INFO, START_URLS, \
     FILTER_TITLE
 
 logging.basicConfig(
-        filename = ('/tmp/douab.log'),
+        filename = ('/tmp/crawl_douban.log'),
         level = logging.INFO,
         filemode = 'w',
         format = '[%(filename)s:%(lineno)d] %(asctime)s - %(levelname)s: %(message)s')
@@ -33,7 +33,7 @@ class DoubanSpider(CrawlSpider):
             charset = 'utf8')
 
     def __get_people_id_from_url(self, href):
-        m =  re.search("^http://www.douban.com/group/people/([^/]+)/$", href)
+        m =  re.search("^http://www.douban.com/people/([^/]+)/$", href)
         if m:
             return m.group(1)
         else:

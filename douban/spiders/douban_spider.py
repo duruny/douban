@@ -137,7 +137,7 @@ class DoubanSpider(CrawlSpider):
                 cur = con.cursor()
                 cur.execute("UPDATE %s SET content='%s', timestamp=%d \
                              WHERE id=%d" %
-                             (MYSQL_INFO['topic_table'], content, timestamp, topic_id))
+                             (MYSQL_INFO['topic_table'], '', timestamp, topic_id))
         except Exception as e:
             logging.error(e)
             return

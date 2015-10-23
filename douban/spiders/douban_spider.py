@@ -116,13 +116,7 @@ class DoubanSpider(CrawlSpider):
         try:
             url = response.url
             create_time = response.xpath("//span[@class='color-green']/text()").extract()
-            content = response.xpath("//div[@class='topic-content']/p/text()").extract()
-
-            if not (url and create_time and content):
-                return
-
             create_time = create_time[0]
-            content = content[0]
 
             topic_id = self.__get_topic_id_from_url(url)
             timestamp = time.mktime(datetime.strptime(create_time, "%Y-%m-%d %H:%M:%S").timetuple())
@@ -135,9 +129,8 @@ class DoubanSpider(CrawlSpider):
             con = self.con
             with con:
                 cur = con.cursor()
-                cur.execute("UPDATE %s SET content='%s', timestamp=%d \
-                             WHERE id=%d" %
-                             (MYSQL_INFO['topic_table'], '', timestamp, topic_id))
+                cur.execute("UPDATE %s SET timestamp=%d WHERE id=%d" %
+                             (MYSQL_INFO['topic_table'], timestamp, topic_id))
         except Exception as e:
             logging.error(e)
             return

@@ -33,14 +33,14 @@ class DoubanSpider(CrawlSpider):
             charset = 'utf8')
 
     def __get_people_id_from_url(self, href):
-        m =  re.search("^http://www.douban.com/people/([^/]+)/$", href)
+        m =  re.search("^https://www.douban.com/people/([^/]+)/$", href)
         if m:
             return m.group(1)
         else:
             return None
 
     def __get_topic_id_from_url(self, href):
-        m =  re.search("^http://www.douban.com/group/topic/([^/]+)/$", href)
+        m =  re.search("^https://www.douban.com/group/topic/([^/]+)/$", href)
         if m:
             return m.group(1)
         else:
@@ -73,9 +73,29 @@ class DoubanSpider(CrawlSpider):
                 reply_count = node.xpath(".//td[3]/text()").extract()
                 reply_time = node.xpath(".//td[4]/text()").extract()
 
-                if not (href and title and reply_count and reply_time \
-                    and people_href and people_name):
-                    continue
+                #if not (href and title and reply_count and reply_time \
+                #    and people_href and people_name):
+                #    continue
+ 
+                if href[0]:
+                    href = href[0]
+
+                if title[0]:
+                    title = title[0]
+
+                if people_href[0]:
+                    people_href = people_href[0]
+
+                if people_name[0]:
+                    people_name = people_name[0]
+
+                try:
+                    reply_count = int(reply_count[0])
+                except Exception as e:
+                    reply_count = 0
+
+                if reply_time[0]:
+                    reply_time = reply_time[0]
 
                 href = href[0]
                 title = title[0]
@@ -88,9 +108,9 @@ class DoubanSpider(CrawlSpider):
                 people_id = self.__get_people_id_from_url(people_href)
                 reply_time = self.__get_reply_time(reply_time)
 
-                if not topic_id or not people_id or not reply_time \
-                    or not reply_count or self.__should_continue(title, reply_count):
-                    continue
+                #if not topic_id or not people_id or not reply_time \
+                #    or not reply_count or self.__should_continue(title, reply_count):
+                #    continue
 
                 topic_id = int(topic_id)
                 reply_time = str(datetime.now().year) + '-' + reply_time

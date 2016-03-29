@@ -32,13 +32,6 @@ class DoubanSpider(CrawlSpider):
             db = MYSQL_INFO['db'],
             charset = 'utf8')
 
-    def __get_people_id_from_url(self, href):
-        m =  re.search("^https://www.douban.com/people/([^/]+)/$", href)
-        if m:
-            return m.group(1)
-        else:
-            return None
-
     def __get_topic_id_from_url(self, href):
         m =  re.search("^https://www.douban.com/group/topic/([^/]+)/$", href)
         if m:
@@ -68,49 +61,41 @@ class DoubanSpider(CrawlSpider):
             try:
                 href = node.xpath(".//td[1]/a/@href").extract()
                 title = node.xpath(".//td[1]/a/@title").extract()
-                people_href = node.xpath(".//td[2]/a/@href").extract()
                 people_name = node.xpath(".//td[2]/a/text()").extract()
                 reply_count = node.xpath(".//td[3]/text()").extract()
                 reply_time = node.xpath(".//td[4]/text()").extract()
 
-                #if not (href and title and reply_count and reply_time \
-                #    and people_href and people_name):
-                #    continue
- 
+
                 if href[0]:
                     href = href[0]
 
                 if title[0]:
                     title = title[0]
 
-                if people_href[0]:
-                    people_href = people_href[0]
-
                 if people_name[0]:
                     people_name = people_name[0]
 
                 try:
-                    reply_count = int(reply_count[0])
+                    if reply_count:
+                        reply_count = int(reply_count[0])
+                    else:
+                        reply_count = 0
                 except Exception as e:
                     reply_count = 0
 
                 if reply_time[0]:
                     reply_time = reply_time[0]
 
-                href = href[0]
-                title = title[0]
-                people_href = people_href[0]
-                people_name = people_name[0]
-                reply_count = int(reply_count[0])
-                reply_time = reply_time[0]
 
                 topic_id = self.__get_topic_id_from_url(href)
-                people_id = self.__get_people_id_from_url(people_href)
                 reply_time = self.__get_reply_time(reply_time)
 
-                #if not topic_id or not people_id or not reply_time \
-                #    or not reply_count or self.__should_continue(title, reply_count):
-                #    continue
+#                print 'href: ', href
+#                print 'title: ', title
+#                print 'people_name: ', people_name
+#                print 'reply_count: ', reply_count
+#                print 'topic_id: ', topic_id
+#                print 'reply_time: ', reply_time
 
                 topic_id = int(topic_id)
                 reply_time = str(datetime.now().year) + '-' + reply_time
@@ -125,7 +110,7 @@ class DoubanSpider(CrawlSpider):
                                  reply_timestamp = %d, \
                                  reply_count = %d" %
                                  (MYSQL_INFO['topic_table'],
-                                  topic_id, title, people_id, people_name, reply_timestamp, reply_count,
+                                  topic_id, title, 0, people_name, reply_timestamp, reply_count,
                                   reply_timestamp, reply_count))
             except Exception as e:
                 logging.error(e)
@@ -137,7 +122,6 @@ class DoubanSpider(CrawlSpider):
             url = response.url
             create_time = response.xpath("//span[@class='color-green']/text()").extract()
             create_time = create_time[0]
-
             topic_id = self.__get_topic_id_from_url(url)
             timestamp = time.mktime(datetime.strptime(create_time, "%Y-%m-%d %H:%M:%S").timetuple())
 
@@ -151,6 +135,7 @@ class DoubanSpider(CrawlSpider):
                 cur = con.cursor()
                 cur.execute("UPDATE %s SET timestamp=%d WHERE id=%d" %
                              (MYSQL_INFO['topic_table'], timestamp, topic_id))
+
         except Exception as e:
             logging.error(e)
             return
